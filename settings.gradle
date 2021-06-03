@@ -1,0 +1,2 @@
+rootProject.name = "Cardboard_IMU_Tracking"
+include ':app'
