@@ -37,7 +37,7 @@ public class ArRenderer implements GLSurfaceView.Renderer {
     public ArRenderer(Context context) {
         this.context = context;
         view = new Mat4(defaultViewArray);
-        projection = glm.perspective(glm.radians(45.0f), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.01f, 1000.0f);
+        projection = glm.perspective(glm.radians(90.0f), (float) SCR_WIDTH / (float) SCR_HEIGHT, 0.1f, 10000.0f);
 
     }
 

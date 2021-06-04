@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 3.10.2)
 project("cardboard_imu_tracking")
 include_directories(.)
 include_directories(IMU_CardBoard)
+include_directories(Eigen)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -42,6 +43,19 @@ add_library( # Sets the name of the library.
         IMU_CardBoard/util/rotation.cpp
         IMU_CardBoard/util/vectorutils.cpp)
 
+
+#设置OpenCV-android-sdk路径
+set(pathtoOpenCV /home/lizongtai/Android/opencv-4.5.0-android-sdk/OpenCV-android-sdk/sdk)
+#包含OpenCV头文件
+include_directories(opencv-libs PRIVATE ${pathtoOpenCV}/native/jni/include)
+
+#动态方式加载
+add_library(lib_opencv STATIC IMPORTED)
+#引入libopencv_java3.so文件
+set_target_properties(lib_opencv
+        PROPERTIES
+        IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libopencv_java4.so)
+
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
 # default, you only need to specify the name of the public NDK library
@@ -61,7 +75,7 @@ find_library( # Sets the name of the path variable.
 
 target_link_libraries( # Specifies the target library.
         native-lib
-
+        lib_opencv #链接OpenCV库
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib}

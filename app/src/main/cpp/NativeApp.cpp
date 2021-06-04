@@ -3,7 +3,6 @@
 //
 
 #include <unistd.h>            // for usleep
-#include <vector>
 #include <android/log.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -96,13 +95,13 @@ void NativeApp::ThreadFunction() {
         long monotonic_time_nano = GetMonotonicTimeNano();
         monotonic_time_nano += kPredictionTimeWithoutVsyncNanos;
 
-        head_tracker_->GetPose(monotonic_time_nano, out_position, out_orientation);
+        head_tracker_->GetPose(monotonic_time_nano, temp_out_position, temp_out_orientation);
 
 //        __android_log_print(ANDROID_LOG_DEBUG, "EKF", "GetPose Position:%f,%f,%f--Rotation:%f,%f,%f,%f", out_position[0], out_position[1],
 //            out_position[2],
 //            out_orientation[0], out_orientation[1], out_orientation[2], out_orientation[3]);
-        temp_out_position = out_position;
-        temp_out_orientation = out_orientation;
+//        temp_out_position = out_position;
+//        temp_out_orientation = out_orientation;
 
         //TODO: Update frame rate control
         timespec t, rem;
@@ -144,4 +143,12 @@ std::vector<float> NativeApp::getOutput() {
     res.push_back(temp_out_orientation[2]);
     res.push_back(temp_out_orientation[3]);
     return res;
+}
+
+std::array<float,4> NativeApp::getRvec() {
+    return temp_out_orientation;
+}
+
+std::array<float,3> NativeApp::getTvec() {
+    return temp_out_position;
 }

@@ -16,6 +16,8 @@ import tongji.lzt.cardboard_imu_tracking.opengl.ARBaseRenderer;
 import tongji.lzt.cardboard_imu_tracking.opengl.ArRenderer;
 import tongji.lzt.cardboard_imu_tracking.opengl.OpenGLUtil;
 
+import static tongji.lzt.cardboard_imu_tracking.MainActivity.getViewMatrix;
+
 public class TurnRenderer extends ARBaseRenderer {
 
     final static glm_.glm glm = glm_.glm.INSTANCE;
@@ -90,12 +92,11 @@ public class TurnRenderer extends ARBaseRenderer {
             //model = glm::scale(model, glm::vec3(2.f , 1.f, 1.f));
             model = model.translate(transPos);
             model = model.rotate(glm.radians(turnDirection), new Vec3(0.0f, 0.0f, 1.0f));
-            Mat4 rotation=new Mat4(1.0f);
-//            rotation=new Mat4(getRotationArray());
+            Mat4 rotation=new Mat4(getViewMatrix());
 //            rotation=rotation.rotate(glm.radians(getTurnAngle()),new  Vec3(0.0f, 1.0f, 0.0f));
             GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(mProgram, "model"), 1, false, model.toFloatArray(), 0);
-            GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(mProgram, "rotation"), 1, false, rotation.toFloatArray(), 0);
-            GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(mProgram, "view"), 1, false, getViewArray(), 0);
+//            GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(mProgram, "rotation"), 1, false, rotation.toFloatArray(), 0);
+            GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(mProgram, "view"), 1, false, getViewMatrix(), 0);
             GLES30.glUniformMatrix4fv(GLES30.glGetUniformLocation(mProgram, "projection"), 1, false, getProjectionArray(), 0);
             GLES30.glDrawElements(GLES20.GL_TRIANGLES, indices.length, GLES20.GL_UNSIGNED_SHORT, indicesBuffer);
 

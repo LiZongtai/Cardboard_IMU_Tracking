@@ -13,38 +13,35 @@ import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import tongji.lzt.cardboard_imu_tracking.databinding.ActivityMainBinding;
-
 public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = "MainActivity";
+    private boolean isStop=false;
+    private boolean isIMUInit=true;
+    private int initConut=0;
+
+    private static float[] viewMatrix=new float[]{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f};
+    private float[][] initViewMatrix=new float[][]{
+            {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f},
+            {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f},
+            {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f},
+            {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f}};
 
     static {
         System.loadLibrary("native-lib");
     }
 
-    private ActivityMainBinding binding;
-    // Opaque native pointer to the native CardboardApp instance.
-    // This object is owned by the VrActivity instance and passed to the native methods.
-    private long nativeApp;
-    private TextView textView;
+    private static long nativeApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setImmersiveSticky();
         setContentView(R.layout.activity_main);
         nativeApp = createNativeApp();
-        textView=(TextView)findViewById(R.id.posView);
+        viewMatrix=new float[]{0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,0.0f,1.0f};
+        initConut=0;
         // Example of a call to a native method
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.v(TAG, "====Activity onPause.");
-            nativePause(nativeApp);
         new Thread() {
             @Override
             public void run() {
@@ -57,10 +54,22 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-
-                                float[] pos = getValue(nativeApp);
-                                System.out.println(Arrays.toString(pos));
-                                textView.setText(Arrays.toString(pos));
+                                if(!isStop){
+                                    float[] trans = getTransMatrix(nativeApp);
+                                    if(!isIMUInit){
+                                        if(trans[0]!=initViewMatrix[0][0] && trans[0]!=initViewMatrix[1][0] && trans[0]!=initViewMatrix[2][0] && trans[0]!=initViewMatrix[3][0]){
+                                            viewMatrix = trans;
+                                        }
+                                    }else {
+                                        initViewMatrix[initConut]=trans;
+//                                    viewMatrix = trans;
+                                        initConut=initConut+1;
+                                        if(initConut==3){
+                                            isIMUInit=false;
+                                        }
+                                    }
+//                                    System.out.println(Arrays.toString(viewMatrix));
+                                }
                             }
                         });
                     }
@@ -69,11 +78,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }.start();
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.v(TAG, "====Activity onPause.");
+            nativePause(nativeApp);
+    }
     @Override
     protected void onResume() {
         super.onResume();
         Log.v(TAG, "====Activity onResume.");
-            nativeResume(nativeApp);
+        nativeResume(nativeApp);
     }
 
     @Override
@@ -109,13 +125,19 @@ public class MainActivity extends AppCompatActivity {
     public native void nativeResume(long nativePtr);
     public native void nativeStop(long nativePtr);
     public native float[] getValue(long nativePtr);
-    public native float[] getTransformationMatrix(long nativePtr);
+    public static native float[] getTransMatrix(long nativePtr);
 
     public void start(View view) {
-        nativeApp = createNativeApp();
+        nativeResume(nativeApp);
+        isStop=false;
     }
 
     public void stop(View view) {
-        nativeStop(nativeApp);
+        nativePause(nativeApp);
+        isStop=true;
+    }
+
+    public static float[] getViewMatrix(){
+        return viewMatrix;
     }
 }

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <assert.h>
 #include <jni.h>
+#include <vector>
 #include <pthread.h>
 #include <android/native_window.h>
 #include <EGL/egl.h>
@@ -53,6 +54,9 @@ public:
     void Native_SensorResume();
 
     std::vector<float> getOutput();
+
+    std::array<float,3> getTvec();
+    std::array<float,4> getRvec();
 };
 
 
